@@ -3,5 +3,8 @@ flask_sqlalchemy
 flask_wtf
 flask_login
 flask_migrate
+Flask
+gunicorn
 psycopg2-binary
+
 email_validator
