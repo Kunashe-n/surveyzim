@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survey Editor - SurveyZim</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #6c757d;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --background: #f0f2f5;
+            --card-bg: #fff;
+            --shadow-light: rgba(0, 0, 0, 0.1);
+            --shadow-dark: rgba(0, 0, 0, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        .neu-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            box-shadow: 5px 5px 15px var(--shadow-light), -5px -5px 15px rgba(255, 255, 255, 0.8);
+            padding: 25px;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .neu-card:hover {
+            box-shadow: 8px 8px 20px var(--shadow-light), -8px -8px 20px rgba(255, 255, 255, 0.8);
+        }
+
+        .neu-btn {
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            background: var(--card-bg);
+            box-shadow: 3px 3px 8px var(--shadow-light), -3px -3px 8px rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: 500;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .neu-btn:hover {
+            box-shadow: 2px 2px 5px var(--shadow-light), -2px -2px 5px rgba(255, 255, 255, 0.8);
+        }
+
+        .neu-btn:active {
+            box-shadow: inset 3px 3px 8px var(--shadow-light), inset -3px -3px 8px rgba(255, 255, 255, 0.8);
+        }
+
+        .neu-btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 3px 3px 8px rgba(67, 97, 238, 0.3), -3px -3px 8px rgba(255, 255, 255, 0.8);
+        }
+
+        .neu-btn-success {
+            background: var(--success);
+            color: white;
+            box-shadow: 3px 3px 8px rgba(40, 167, 69, 0.3), -3px -3px 8px rgba(255, 255, 255, 0.8);
+        }
+
+        .neu-btn-danger {
+            background: var(--danger);
+            color: white;
+            box-shadow: 3px 3px 8px rgba(220, 53, 69, 0.3), -3px -3px 8px rgba(255, 255, 255, 0.8);
+        }
+
+        .neu-btn-secondary {
+            background: var(--secondary);
+            color: white;
+            box-shadow: 3px 3px 8px rgba(108, 117, 125, 0.3), -3px -3px 8px rgba(255, 255, 255, 0.8);
+        }
+
+        .neu-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 10px;
+            background: var(--card-bg);
+            box-shadow: inset 3px 3px 8px var(--shadow-light), inset -3px -3px 8px rgba(255, 255, 255, 0.8);
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .page-title {
+            color: var(--primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h2, h3 {
+            color: var(--dark);
+            margin-bottom: 20px;
+        }
+
+        .word-count-info {
+            background: rgba(76, 175, 80, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .word-count-display {
+            font-weight: bold;
+            font-size: 18px;
+            color: var(--primary);
+        }
+        
+        .word-limit-warning {
+            color: var(--danger);
+            font-weight: bold;
+            padding: 10px;
+            background: rgba(244, 67, 54, 0.1);
+            border-radius: 5px;
+        }
+        
+        .question-word-count {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .question-item {
+            margin-bottom: 20px;
+            padding: 20px;
+        }
+
+        .options-container {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.03);
+            border-radius: 10px;
+        }
+
+        .add-option {
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .neu-card {
+                padding: 15px;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .neu-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Survey Header -->
+        <div class="neu-card">
+            <h2 class="page-title"><i class="fas fa-poll"></i> Customer Feedback Survey</h2>
+            <p>We value your feedback! Please take a few minutes to complete this survey about your recent experience with our products and services.</p>
+            
+            <div class="word-count-info">
+                <i class="fas fa-info-circle"></i>
+                Your current plan: <strong>Pro</strong>
+                (Max 1000 words)
+                <div class="word-count-display">
+                    <span id="total-word-count">375</span> / 
+                    <span id="word-limit">1000</span> words
+                </div>
+                <div class="word-limit-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Word limit exceeded! You cannot publish until you reduce content or upgrade your plan.
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Question Form -->
+        <div class="neu-card">
+            <h3>Add Question</h3>
+            <form method="POST" id="question-form">
+                <div id="questions-container"></div>
+
+                <div class="form-actions" style="margin-top: 20px;">
+                    <button type="button" id="add-question" class="neu-btn neu-btn-primary">
+                        <i class="fas fa-plus"></i> Add Question
+                    </button>
+                </div>
+
+                <div class="form-actions" style="margin-top: 30px;">
+                    <button type="submit" class="neu-btn neu-btn-success" id="submit-questions">
+                        <i class="fas fa-save"></i> Save Questions
+                    </button>
+                    <a href="#" class="neu-btn">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Existing Questions -->
+        <div class="neu-card">
+            <h3>Existing Questions (3)</h3>
+            <ul style="list-style:none; padding:0;">
+                <li class="neu-card question-item" style="margin-bottom:15px; padding:15px;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div>
+                            <strong>How satisfied are you with our product?</strong> (multiple_choice) - 8 words
+                            <ul style="margin-top:5px; padding-left: 20px;">
+                                <li>Very Satisfied</li>
+                                <li>Satisfied</li>
+                                <li>Neutral</li>
+                                <li>Dissatisfied</li>
+                                <li>Very Dissatisfied</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <button class="neu-btn neu-btn-danger" style="padding:5px 10px;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </li>
+                <li class="neu-card question-item" style="margin-bottom:15px; padding:15px;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div>
+                            <strong>What features would you like to see in future updates?</strong> (paragraph) - 11 words
+                        </div>
+                        <div>
+                            <button class="neu-btn neu-btn-danger" style="padding:5px 10px;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </li>
+                <li class="neu-card question-item" style="margin-bottom:15px; padding:15px;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div>
+                            <strong>How likely are you to recommend our product to others?</strong> (dropdown) - 11 words
+                            <ul style="margin-top:5px; padding-left: 20px;">
+                                <li>Extremely Likely</li>
+                                <li>Very Likely</li>
+                                <li>Likely</li>
+                                <li>Unlikely</li>
+                                <li>Extremely Unlikely</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <button class="neu-btn neu-btn-danger" style="padding:5px 10px;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="form-actions">
+            <a href="#" class="neu-btn">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            
+            <button class="neu-btn" disabled title="Word limit exceeded. Cannot publish.">
+                <i class="fas fa-paper-plane"></i> Publish Survey
+            </button>
+            <a href="#" class="neu-btn neu-btn-primary">
+                <i class="fas fa-arrow-up"></i> Upgrade Plan
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Fixed JavaScript variables - no more Jinja2 template issues
+        const userPaymentStatus = "paid";
+        const userWordLimit = 1000;
+        const hasPaidPlan = userPaymentStatus !== 'unpaid';
+        const currentTotalWords = 375;
+
+        let questionCount = 0;
+
+        function countWords(text) {
+            if (!text || !text.trim()) return 0;
+            return text.trim().split(/\s+/).length;
+        }
+
+        function updateQuestionWordCount() {
+            let newQuestionWords = 0;
+            document.querySelectorAll('.question-text-input').forEach(input => {
+                newQuestionWords += countWords(input.value);
+            });
+            
+            const totalWords = currentTotalWords + newQuestionWords;
+            const submitBtn = document.getElementById('submit-questions');
+            
+            // Check if adding these questions would exceed the limit
+            if (hasPaidPlan && totalWords > userWordLimit) {
+                submitBtn.disabled = true;
+                submitBtn.title = 'Adding these questions would exceed your word limit.';
+            } else {
+                submitBtn.disabled = false;
+                submitBtn.title = '';
+            }
+        }
+
+        // Function to create a new question block
+        function createQuestionBlock() {
+            questionCount++;
+            const container = document.getElementById("questions-container");
+            const qDiv = document.createElement("div");
+            qDiv.className = "neu-card question-item";
+            qDiv.dataset.index = questionCount;
+            qDiv.style.marginBottom = "15px";
+            qDiv.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <label><strong>Question ${questionCount}</strong></label>
+                    <button type="button" class="neu-btn neu-btn-danger delete-question">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                <div class="form-group">
+                    <input type="text" name="question_text[]" class="neu-input question-text-input" placeholder="Enter your question" required>
+                    <div class="question-word-count">
+                        <span class="question-word-count-value">0</span> words in this question
+                    </div>
+                </div>
+                <div class="form-group">
+                    <select name="question_type[]" class="neu-input question-type">
+                        <option value="short">Short answer</option>
+                        <option value="paragraph">Paragraph</option>
+                        <option value="multiple_choice">Multiple choice</option>
+                        <option value="checkbox">Checkboxes</option>
+                        <option value="dropdown">Dropdown</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="question_required[]" value="true"> Required
+                    </label>
+                </div>
+                <div class="options-container" style="display:none; margin-top:10px;">
+                    <button type="button" class="add-option neu-btn neu-btn-secondary">
+                        <i class="fas fa-plus"></i> Add Option
+                    </button>
+                </div>
+            `;
+            container.appendChild(qDiv);
+
+            // Delete question
+            qDiv.querySelector(".delete-question").addEventListener("click", () => {
+                container.removeChild(qDiv);
+                updateQuestionLabels();
+                updateQuestionWordCount();
+            });
+
+            const typeSelect = qDiv.querySelector(".question-type");
+            const optionsContainer = qDiv.querySelector(".options-container");
+            const questionInput = qDiv.querySelector(".question-text-input");
+            const questionWordCount = qDiv.querySelector(".question-word-count-value");
+
+            // Update word count when question text changes
+            questionInput.addEventListener("input", function() {
+                const words = countWords(this.value);
+                questionWordCount.textContent = words;
+                updateQuestionWordCount();
+            });
+
+            // Show options only for MCQ, checkbox, dropdown
+            typeSelect.addEventListener("change", () => {
+                if (["multiple_choice","checkbox","dropdown"].includes(typeSelect.value)) {
+                    optionsContainer.style.display = "block";
+                } else {
+                    optionsContainer.style.display = "none";
+                }
+            });
+
+            // Add option dynamically
+            optionsContainer.querySelector(".add-option").addEventListener("click", () => {
+                const index = qDiv.dataset.index;
+                const input = document.createElement("input");
+                input.type = "text";
+                input.name = `question_option_${index}[]`;
+                input.className = "neu-input";
+                input.placeholder = "Option text";
+                input.style.marginTop = "5px";
+                optionsContainer.insertBefore(input, optionsContainer.querySelector(".add-option"));
+            });
+            
+            // Update word count validation
+            updateQuestionWordCount();
+        }
+
+        // Update question labels after deletion
+        function updateQuestionLabels() {
+            const questions = document.querySelectorAll("#questions-container .question-item");
+            questions.forEach((q, idx) => {
+                q.querySelector("label strong").textContent = `Question ${idx + 1}`;
+                q.dataset.index = idx + 1;
+            });
+            questionCount = questions.length;
+        }
+
+        // Add new question
+        document.getElementById("add-question").addEventListener("click", createQuestionBlock);
+
+        // Initial update
+        updateQuestionWordCount();
+    </script>
+</body>
+</html>
