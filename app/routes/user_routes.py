@@ -791,26 +791,30 @@ def payment_select():
 @bp.route("/process_payment/<package>", methods=["POST"])
 @login_required
 def process_payment(package):
-    if package not in WORD_LIMITS:
-        flash("Invalid package selected.")
-        return redirect(url_for("main.payment_select"))
+    # define temporary prices
+    package_prices = {
+        "student": 30.00,
+        "basic": 100.00,
+        "extended": 250.00,
+        "enterprise": 600.00
+    }
 
-    # 1️⃣ Collect EcoCash number from frontend form
+    if package not in package_prices:
+        return {"error": "Invalid package"}, 400
+
     phone = request.form.get("phone")
     if not phone:
-        flash("Please provide your EcoCash number.")
-        return redirect(url_for("main.payment", package=package))
+        return {"error": "Missing EcoCash number"}, 400
 
-    # 2️⃣ Generate unique reference
     reference = str(uuid.uuid4())
+    amount = package_prices[package]
 
-    # 3️⃣ Prepare EcoCash API request
     payload = {
         "customerEcocashPhoneNumber": phone,
-        "amount": 10.0,  # set real amount depending on package
+        "amount": amount,
         "description": f"Payment for {package} plan",
         "currency": "USD",
-        "callbackUrl": url_for("main.ecocash_callback", _external=True),
+        "callbackUrl": "https://surveyzim.onrender.com/payment/callback",
         "reference": reference
     }
 
@@ -819,7 +823,6 @@ def process_payment(package):
         "Content-Type": "application/json"
     }
 
-    # 4️⃣ Send request to EcoCash API
     try:
         resp = requests.post(
             current_app.config["ECOCASH_BASE_URL"] + "/payments",
@@ -827,24 +830,12 @@ def process_payment(package):
             headers=headers,
             timeout=30
         )
-        resp.raise_for_status()
         data = resp.json()
-
-        if data.get("status") in ["SUCCESS", "PENDING"]:
-            # Temporarily store reference on user until callback confirms
-            current_user.payment_reference = reference
-            current_user.pending_package = package
-            db.session.commit()
-
-            flash("Payment request sent to your EcoCash number. Please approve on your phone.")
-            return redirect(url_for("main.dashboard"))
-        else:
-            flash(f"Payment initiation failed: {data.get('error', 'Unknown error')}", "danger")
-            return redirect(url_for("main.payment", package=package))
-
+        current_app.logger.info(f"Payment initiation response: {data}")
+        return data, resp.status_code
     except Exception as e:
-        flash(f"Error initiating payment: {str(e)}", "danger")
-        return redirect(url_for("main.payment", package=package))
+        current_app.logger.error(f"Error initiating payment: {str(e)}")
+        return {"error": str(e)}, 500
 
 # -----------------------------
 # Payment page
@@ -986,9 +977,18 @@ def reset_password(token: str):
 def ecocash_callback():
     try:
         data = request.get_json(silent=True) or request.form.to_dict()
-        current_app.logger.info(f"📩 Callback received: {data}")
-        return {"message": "Callback received", "data": data}, 200
+        current_app.logger.info(f"📩 EcoCash callback received: {data}")
+
+        # just echo the status back
+        return {
+            "message": "Callback received",
+            "status": data.get("status"),
+            "reference": data.get("reference")
+        }, 200
+
     except Exception as e:
         current_app.logger.error(f"❌ Callback error: {str(e)}", exc_info=True)
         return {"error": str(e)}, 500
+
+
 
