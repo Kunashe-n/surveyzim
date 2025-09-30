@@ -7,6 +7,7 @@ flask_migrate
 Flask
 gunicorn
 psycopg2-binary
-
+python-dotenv
 email_validator
+
 
