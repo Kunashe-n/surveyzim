@@ -984,46 +984,11 @@ def reset_password(token: str):
 
 @bp.route("/payment/callback", methods=["POST"])
 def ecocash_callback():
-    """
-    Handle EcoCash callback after payment.
-    """
     try:
-        # Get payload (EcoCash may send JSON or form data)
         data = request.get_json(silent=True) or request.form.to_dict()
         current_app.logger.info(f"📩 Callback received: {data}")
-
-        reference = data.get("reference")
-        status = (data.get("status") or "").upper()
-
-        if not reference:
-            current_app.logger.warning("⚠️ Callback missing reference")
-            return "Missing reference", 400
-
-        # Find user with this payment reference
-        from ..models.user import User
-        user = User.query.filter_by(payment_reference=reference).first()
-
-        if not user:
-            current_app.logger.warning(f"⚠️ No user found with reference {reference}")
-            return "User not found", 404
-
-        if status == "SUCCESS":
-            package = getattr(user, "pending_package", None)
-            if package and package in WORD_LIMITS:
-                user.payment_status = package
-                user.word_limit = WORD_LIMITS[package]
-                user.plan_name = package.capitalize()
-                user.payment_reference = None
-                user.pending_package = None
-                db.session.commit()
-                current_app.logger.info(f"✅ Payment confirmed for {user.username}, plan {package}")
-        elif status == "FAILED":
-            current_app.logger.info(f"❌ Payment failed for ref {reference}")
-        else:
-            current_app.logger.info(f"ℹ️ Payment status for ref {reference}: {status}")
-
-        return "OK", 200
-
+        return {"message": "Callback received", "data": data}, 200
     except Exception as e:
-        current_app.logger.error(f"❌ Callback processing error: {str(e)}", exc_info=True)
-        return "Internal Server Error", 500
+        current_app.logger.error(f"❌ Callback error: {str(e)}", exc_info=True)
+        return {"error": str(e)}, 500
+
